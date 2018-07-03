@@ -10,7 +10,7 @@
 # 1. 生成するオブジェクトのファイル名を指定
 TARGET = line_tracer.mot
 # 2. 生成に必要なCのファイル名を空白で区切って並べる
-SOURCE_C = ad.c lcd.c loader.c random.c sci2.c
+SOURCE_C = main.c ad.c lcd.c sci2.c timer.c
 # 3. 生成に必要なアセンブラのファイル名を空白で区切って並べる
 #	(スタートアップルーチンは除く)
 SOURCE_ASM = 

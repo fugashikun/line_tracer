@@ -103,13 +103,13 @@ int ad_status(int sw0){
     an2_ave%=1000;
 
     if(an1_ave > 200 && an2_ave > 200){
-      PBDR = next_move;
+      PBDR = next_move; //tomaru
     }else if(an1_ave/40 > an2_ave/40){
-      PBDR = next_move = 0x0D;
+      PBDR = next_move = 0x0D; //右
     }else if(an1_ave/40 < an2_ave/40){
-      PBDR = next_move = 0x07;
+      PBDR = next_move = 0x07; //s|df!|
     }else{
-      PBDR = 0x05;
+      PBDR = 0x05; //mae
     }
 
     lcd_cursor(0,0);

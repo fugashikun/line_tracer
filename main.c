@@ -59,9 +59,8 @@ void int_imia0(void){
   if(control_timer >= CONTROLTIME){
     ad_scan(0,1);
   }else{
-    control_timer ++;
+    control_timer++;
   }
-
   timer_intflag_reset(0);
   ENINT();
 }

@@ -8,11 +8,11 @@
 #include "lcd.h"
 
 #define DATAWAIT  1
-  /* データ待ち状態 */
+/* データ待ち状態 */
 #define COMPLETED 0
-  /* データロード状態 */
+/* データロード状態 */
 #define ERROR -1
-  /* データロードエラー状態 */
+/* データロードエラー状態 */
 
 int sload();
 void call();
@@ -40,8 +40,6 @@ int main(void)
   }
   return 1;
 }
-#pragma interrupt
-
 
 int sload(void)
 {
@@ -67,7 +65,7 @@ int sload(void)
       }
       fname[len] = '\0';
       i = (int)gethex(2,DO_ECHO); putch('\n'); 
-                                        /* チェックサムは読み飛ばす */
+      /* チェックサムは読み飛ばす */
       putch('\n');
       break;
     case '1' :         /* S1 レコードの処理 */
@@ -77,7 +75,7 @@ int sload(void)
 	*(char *)adr++ = (char)gethex(2,DO_ECHO);
       }
       i = (int)gethex(2,DO_ECHO); putch('\n');
-                       /* チェックサムは読み飛ばす */
+      /* チェックサムは読み飛ばす */
       break;
     case '2' :         /* S2 レコードの処理 */
                        /*   ロードアドレスサイズは3バイト(24ビット) */
@@ -86,7 +84,7 @@ int sload(void)
 	*(char *)adr++ = (char)gethex(2,DO_ECHO);
       }
       i = (int)gethex(2,DO_ECHO); putch('\n');
-                       /* チェックサムは読み飛ばす */
+      /* チェックサムは読み飛ばす */
       break;
     case '3' :         /* S3 レコードの処理 */
                        /*   ロードアドレスサイズは4バイト(32ビット) */
@@ -95,33 +93,33 @@ int sload(void)
 	*(char *)adr++ = (char)gethex(2,DO_ECHO);
       }
       i = (int)gethex(2,DO_ECHO); putch('\n');
-                       /* チェックサムは読み飛ばす */
+      /* チェックサムは読み飛ばす */
       break;
     case '9' :         /* S9 レコードの処理 */
                        /*   S1に対応するエンドレコード */
       len = (int)gethex(2,DO_ECHO); adr = gethex(4,DO_ECHO);
       i = (int)gethex(2,DO_ECHO); putch('\n');
-                       /* チェックサムは読み飛ばす */
+      /* チェックサムは読み飛ばす */
       run = COMPLETED;
       break;
     case '8' :         /* S8 レコードの処理 */
                        /*   S2に対応するエンドレコード */
       len = (int)gethex(2,DO_ECHO); adr = gethex(6,DO_ECHO);
       i = (int)gethex(2,DO_ECHO); putch('\n');
-                       /* チェックサムは読み飛ばす */
+      /* チェックサムは読み飛ばす */
       run = COMPLETED;
       break;
     case '7' :         /* S7 レコードの処理 */
                        /*   S3に対応するエンドレコード */
       len = (int)gethex(2,DO_ECHO); adr = gethex(8,DO_ECHO);
       i = (int)gethex(2,DO_ECHO); putch('\n');
-                       /* チェックサムは読み飛ばす */
+      /* チェックサムは読み飛ばす */
       putstr("Run!!",SENDCR);
       run = COMPLETED;
       break;
     default :          /* 上記以外の Sx レコードの処理 */
                        /*   不正なSレコードとして処理する */
-       run =  ERROR; break;
+      run =  ERROR; break;
     }
     if (run == COMPLETED){
       lcd_clear();

@@ -19,9 +19,7 @@ int mode;
 
 int an1_ave,an2_ave;
 int adbuf[2][10];
-int adbufcounter;
-int next_move = 0;
-
+int adbufcounter = 0;
 
 void ad_read(void);
 void int_imia0(void);
@@ -98,34 +96,32 @@ void control_motor(void)
 {
   ad_read();
   
-  if(an1_ave > 200 && an2_ave > 200){
-    PBDR = next_move = 0x00;
-  }else if(an1_ave/40 > an2_ave/40){
-    PBDR = next_move = 0x07;
-  }else if(an1_ave/40 < an2_ave/40){
-    PBDR = next_move = 0x0D;
+  if(an1_ave > 220 && an2_ave > 220){
+    PBDR = 0x00;
+  }else if(an1_ave/60 > an2_ave/60){ //60はPWMの誤差削除
+    PBDR = 0x07;
+  }else if(an1_ave/60 < an2_ave/60){
+    PBDR = 0x0D;
   }else{
     PBDR = 0x05;
   }
-  
-  DISINT();
-  // wait1ms(5);
+
   ENINT();
 }
 
 void disp_lcd(void)
 {  
   lcd_cursor(0,0);
-  lcd_printch('0' + an1_ave/100);
+  lcd_printch(an1_ave/100+'0');
   lcd_cursor(1,0);
-  lcd_printch('0' + (an1_ave - (an1_ave/100)*100)/10);
+  lcd_printch((an1_ave-(an1_ave/100)*100)/10+'0');
   lcd_cursor(2,0);
-  lcd_printch('0' + an1_ave%10);
+  lcd_printch(an1_ave%10+'0');
   
   lcd_cursor(0,1);
-  lcd_printch('0' + an2_ave/100);
+  lcd_printch(an2_ave/100+'0');
   lcd_cursor(1,1);
-  lcd_printch('0' + (an2_ave - (an2_ave/100)*100)/10);
+  lcd_printch((an2_ave-(an2_ave/100)*100)/10+'0');
   lcd_cursor(2,1);
-  lcd_printch('0' + an2_ave%10);
+  lcd_printch(an2_ave%10+'0');
 }

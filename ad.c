@@ -58,18 +58,3 @@ void ad_stop(void)
   ADCSR = ADCSR & 0x5f;  /* A/Dエンドフラグのクリア, 変換停止 */
 }
 
-#pragma interrupt
-void int_adi(){
-
-  ad_stop();
-
-  adbuf[0][adbufcounter] = ADDRBH;
-  adbuf[1][adbufcounter] = ADDRCH;
-
-  adbufcounter++;
-  adbufcounter %= 10;
-
-  ENINT();
-}
-
-

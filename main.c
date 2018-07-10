@@ -17,13 +17,21 @@ int move_switch_flag;
 int control_timer;
 int mode;
 
-void ad_con(void);
+int an1_ave,an2_ave;
+int adbuf[2][10];
+int adbufcounter;
+int next_move = 0;
+
+
+void ad_read(void);
 void int_imia0(void);
 void int_adi(void);
+void control_motor(void);
+void disp_lcd(void);
 
 int main(void){
   
-  mode = STRAIGHT;
+  mode = THROUGH;
   move_switch_flag = 0;
   control_timer = 0;
   PBDDR = 0xFF;
@@ -39,9 +47,8 @@ int main(void){
   ENINT();  
 
   while(1){
-
-      ad_status();
-      
+    control_motor();
+    disp_lcd();
   }
 }
 
@@ -67,12 +74,11 @@ void int_adi(void){
   adbufcounter++;
   adbufcounter %= 10;
   
-  ENINT()
+  ENINT();
 }
 
-int ad_status(void){
+void ad_read(void){
   int counter;
-  int an1_ave,an2_ave;
 
   an1_ave = an2_ave = 0;
   
@@ -84,23 +90,31 @@ int ad_status(void){
   an1_ave = an1_ave / ADNUM;
   an2_ave = an2_ave / ADNUM;
   
-  an1_ave%=1000;
-  an2_ave%=1000;
+  an1_ave %= 1000;
+  an2_ave %= 1000;
+}
+
+void control_motor(void)
+{
+  ad_read();
   
   if(an1_ave > 200 && an2_ave > 200){
-    PBDR = next_move;
+    PBDR = next_move = 0x00;
   }else if(an1_ave/40 > an2_ave/40){
-    PBDR = next_move = 0x0D;
-  }else if(an1_ave/40 < an2_ave/40){
     PBDR = next_move = 0x07;
+  }else if(an1_ave/40 < an2_ave/40){
+    PBDR = next_move = 0x0D;
   }else{
     PBDR = 0x05;
   }
-
-  DISINT();
-  wait1ms(5);
-  ENINT();
   
+  DISINT();
+  // wait1ms(5);
+  ENINT();
+}
+
+void disp_lcd(void)
+{  
   lcd_cursor(0,0);
   lcd_printch('0' + an1_ave/100);
   lcd_cursor(1,0);
@@ -114,6 +128,4 @@ int ad_status(void){
   lcd_printch('0' + (an2_ave - (an2_ave/100)*100)/10);
   lcd_cursor(2,1);
   lcd_printch('0' + an2_ave%10);
-  
-  return 0;
 }

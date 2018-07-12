@@ -6,18 +6,12 @@
 #include "ad.h"
 #include "lcd.h"
 
-#define THROUGH  0
-#define RIGHTTURN 1
-#define LEFTTURN  2
 #define ADNUM 5
-
 #define CONTROLTIME 8
+#define LCDDISPSIZE 8
 
-int move_switch_flag;
 int control_timer;
-int mode;
-
-int an1_ave,an2_ave;
+int an1,an2;
 int adbuf[2][10];
 int adbufcounter = 0;
 
@@ -28,14 +22,11 @@ void control_motor(void);
 void disp_lcd(void);
 
 int main(void){
-  
-  mode = THROUGH;
-  move_switch_flag = 0;
+
+  ROMEMU();
   control_timer = 0;
   PBDDR = 0xFF;
   P6DDR = 0xFE;
-
-  ROMEMU();
   timer_init();
   ad_init();
   lcd_init();  
@@ -65,31 +56,10 @@ void int_imia0(void){
 #pragma interrupt
 void int_adi(void){
   ad_stop();
-  
   adbuf[0][adbufcounter] = ADDRBH;
   adbuf[1][adbufcounter] = ADDRCH;
-  
   adbufcounter++;
   adbufcounter %= 10;
-  
-  ENINT();
-}
-
-void ad_read(void){
-  int counter;
-
-  an1_ave = an2_ave = 0;
-  
-  for(counter=0; counter<ADNUM; counter++){
-    an1_ave += adbuf[0][(adbufcounter+counter)%10];
-    an2_ave += adbuf[1][(adbufcounter+counter)%10];
-  }
-  
-  an1_ave = an1_ave / ADNUM;
-  an2_ave = an2_ave / ADNUM;
-  
-  an1_ave %= 1000;
-  an2_ave %= 1000;
 }
 
 void control_motor(void)
@@ -109,8 +79,26 @@ void control_motor(void)
   ENINT();
 }
 
+void ad_read(void){
+  int counter;
+
+  an1 = 0;
+  an2 = 0;
+  
+  for(counter=0; counter<ADNUM; counter++){
+    an1 += adbuf[0][(adbufcounter+counter)%10];
+    an2 += adbuf[1][(adbufcounter+counter)%10];
+  }
+  
+  an1 = an1 / ADNUM;
+  an2 = an2 / ADNUM;
+  
+  an1 %= 1000;
+  an2 %= 1000;
+}
+
 void disp_lcd(void)
-{  
+{
   lcd_cursor(0,0);
   lcd_printch(an1_ave/100+'0');
   lcd_cursor(1,0);

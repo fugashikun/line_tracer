@@ -39,6 +39,14 @@ void lcd_init(void)
   lcd_putch(0x06,0); /* エントリーモードセット Inc. without Disp.shift */
   lcd_putch(0x0c,0); /* ディスプレイON/OFF制御(ON) */
   lcd_putch(0x80,0); /* DDRAMアドレスセット */
+
+  int i;
+  for(i=0;i<LCDDISPSIZE;i++){
+    lcd_cursor(i,0);
+    lcd_printch(' ');
+    lcd_cursor(i,1);
+    lcd_printch(' ');
+  }
 }
 
 void lcd_cursor(int x, int y)

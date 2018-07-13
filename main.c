@@ -8,7 +8,6 @@
 
 #define ADNUM 5
 #define CONTROLTIME 8
-#define LCDDISPSIZE 8
 
 int control_timer;
 int an1,an2;
@@ -60,23 +59,22 @@ void int_adi(void){
   adbuf[1][adbufcounter] = ADDRCH;
   adbufcounter++;
   adbufcounter %= 10;
+  ENINT();
 }
 
 void control_motor(void)
 {
   ad_read();
   
-  if(an1_ave > 220 && an2_ave > 220){
+  if(an1 > 200 && an2 > 200){
     PBDR = 0x00;
-  }else if(an1_ave/60 > an2_ave/60){ //60はPWMの誤差削除
+  }else if(an1/80 > an2/80){
     PBDR = 0x07;
-  }else if(an1_ave/60 < an2_ave/60){
+  }else if(an1/80 < an2/80){
     PBDR = 0x0D;
   }else{
     PBDR = 0x05;
   }
-
-  ENINT();
 }
 
 void ad_read(void){
@@ -92,24 +90,21 @@ void ad_read(void){
   
   an1 = an1 / ADNUM;
   an2 = an2 / ADNUM;
-  
-  an1 %= 1000;
-  an2 %= 1000;
 }
 
 void disp_lcd(void)
 {
   lcd_cursor(0,0);
-  lcd_printch(an1_ave/100+'0');
+  lcd_printch(an1/100+'0');
   lcd_cursor(1,0);
-  lcd_printch((an1_ave-(an1_ave/100)*100)/10+'0');
+  lcd_printch((an1-(an1/100)*100)/10+'0');
   lcd_cursor(2,0);
-  lcd_printch(an1_ave%10+'0');
+  lcd_printch(an1%10+'0');
   
   lcd_cursor(0,1);
-  lcd_printch(an2_ave/100+'0');
+  lcd_printch(an2/100+'0');
   lcd_cursor(1,1);
-  lcd_printch((an2_ave-(an2_ave/100)*100)/10+'0');
+  lcd_printch((an2-(an2/100)*100)/10+'0');
   lcd_cursor(2,1);
-  lcd_printch(an2_ave%10+'0');
+  lcd_printch(an2%10+'0');
 }

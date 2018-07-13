@@ -7,6 +7,7 @@
 #define LCD_RS 0x40
 #define LCD_RW 0x20
 #define LCD_E 0x10
+#define LCDDISPSIZE 8
 
 void lcd_init(void);
 void lcd_cursor(int x, int y);
@@ -40,13 +41,6 @@ void lcd_init(void)
   lcd_putch(0x0c,0); /* ディスプレイON/OFF制御(ON) */
   lcd_putch(0x80,0); /* DDRAMアドレスセット */
 
-  int i;
-  for(i=0;i<LCDDISPSIZE;i++){
-    lcd_cursor(i,0);
-    lcd_printch(' ');
-    lcd_cursor(i,1);
-    lcd_printch(' ');
-  }
 }
 
 void lcd_cursor(int x, int y)

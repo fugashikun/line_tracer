@@ -6,15 +6,45 @@
 #include "ad.h"
 #include "lcd.h"
 
-#define ADNUM 5
-#define CONTROLTIME 8
+/*タイマー割り込み間隔*/
+#define TIMER0 1000
+/* 割り込み処理で各処理を行う頻度を決める定数 */
+#define DISPTIME 100
+#define KEYTIME 1
+#define ADTIME  2
+#define CONTROLTIME 10
+/* A/D変換関連 */
+/* A/D変換のチャネル数とバッファサイズ */
+#define ADCHNUM   4
+#define ADBUFSIZE 8
+/* 平均化するときのデータ個数 */
+#define ADAVRNUM 4
+/* チャネル指定エラー時に返す値 */
+#define ADCHNONE -1
 
-int control_timer;
-int an1,an2;
-int adbuf[2][10];
-int adbufcounter = 0;
+#define RIGHTPWM 255
+#define LEFTPWM 255
 
-void ad_read(void);
+#define AN1STOP 0x00
+#define AN1NR 0x01
+#define AN1RR 0x02
+#define AN1BLAKE 0x03
+
+#define AN2STOP 0x00
+#define AN2NR 0x04
+#define AN2RR 0x08
+#define AN2BLAKE 0x0c
+
+/* 割り込み処理に必要な変数は大域変数にとる */
+volatile int disp_time, key_time, ad_time, pwm_time, control_time;
+
+/* A/D変換関係 */
+volatile unsigned char adbuf[ADCHNUM][ADBUFSIZE];
+volatile int adbufdp;
+
+unsigned char an1,an2;
+
+void ad_read(int ch);
 void int_imia0(void);
 void int_adi(void);
 void control_motor(void);
@@ -23,30 +53,37 @@ void disp_lcd(void);
 int main(void){
 
   ROMEMU();
-  control_timer = 0;
-  PBDDR = 0xFF;
-  P6DDR = 0xFE;
+  PBDDR = 0x0f;
+  P6DDR = 0x01;
   timer_init();
   ad_init();
   lcd_init();  
-  timer_set(0,1000);
+  timer_set(0,TIMER0);
   timer_intflag_reset(0);
   timer_start(0);
   ENINT();  
 
   while(1){
-    control_motor();
+    if(P9DR & 0x01 == 0) break;
+  }
+  
+  while(1){
     disp_lcd();
   }
 }
 
 #pragma interrupt
-void int_imia0(void){
-
-  if(control_timer >= CONTROLTIME){
+void int_imia0(void)
+{
+  control_time++;
+  if(control_time == CONTROLTIME){
+    control_motor();
+    control_time = 0;
+  }
+  ad_time++;
+  if(ad_time == ADTIME){
     ad_scan(0,1);
-  }else{
-    control_timer++;
+    ad_time = 0;
   }
   timer_intflag_reset(0);
   ENINT();
@@ -55,41 +92,53 @@ void int_imia0(void){
 #pragma interrupt
 void int_adi(void){
   ad_stop();
-  adbuf[0][adbufcounter] = ADDRBH;
-  adbuf[1][adbufcounter] = ADDRCH;
-  adbufcounter++;
-  adbufcounter %= 10;
+  if(adbufdp < ADBUFSIZE-1) adbufdp++;
+  else adbufdp = 0;
+  adbuf[0][adbufdp] = ADDRAH;
+  adbuf[1][adbufdp] = ADDRBH;
+  adbuf[2][adbufdp] = ADDRCH;
+  adbuf[3][adbufdp] = ADDRDH;
   ENINT();
 }
 
 void control_motor(void)
 {
-  ad_read();
+  an1 = ad_read(1);
+  an2 = ad_read(2);
   
-  if(an1 > 200 && an2 > 200){
-    PBDR = 0x00;
-  }else if(an1/80 > an2/80){
-    PBDR = 0x07;
-  }else if(an1/80 < an2/80){
-    PBDR = 0x0D;
-  }else{
-    PBDR = 0x05;
+  PBDR = AN1STOP | AN2STOP;
+  PBDR = AN1NR | AN2NR;
+
+  if(AN1 >= LEFTPWM){
+    PBDR = AN1STOP | AN2STOP;
+    PBDR = AN2BLAKE | AN1NR;
+  }
+  if(AN2 >= RIGHTPWM){
+    PBDR = AN1STOP | AN2STOP;
+    PBDR = AN1BLAKE | AN2NR;
   }
 }
 
-void ad_read(void){
-  int counter;
+void ad_read(int ch)
+{
+  int i,ad,bp;
 
-  an1 = 0;
-  an2 = 0;
-  
-  for(counter=0; counter<ADNUM; counter++){
-    an1 += adbuf[0][(adbufcounter+counter)%10];
-    an2 += adbuf[1][(adbufcounter+counter)%10];
+  if ((ch > ADCHNUM) || (ch < 0)) ad = ADCHNONE;
+  else {
+    bp = adbufdp;
+    ad = 0;
+
+    for(i = 0;i < ADAVRNUM;i++){
+      if(bp <= 0){
+        bp = ADBUFSIZE-1;
+      }else{
+        bp--;
+      }
+      ad += adbuf[ch][bp];
+    }
+    ad /= ADAVRNUM;
   }
-  
-  an1 = an1 / ADNUM;
-  an2 = an2 / ADNUM;
+  return ad; /* データの平均値を返す */
 }
 
 void disp_lcd(void)

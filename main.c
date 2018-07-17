@@ -22,8 +22,8 @@
 /* チャネル指定エラー時に返す値 */
 #define ADCHNONE -1
 
-#define RIGHTPWM 255
-#define LEFTPWM 255
+#define RIGHTPWM 190
+#define LEFTPWM 190
 
 #define AN1STOP 0x00
 #define AN1NR 0x01
@@ -44,29 +44,27 @@ volatile int adbufdp;
 
 unsigned char an1,an2;
 
-void ad_read(int ch);
-void int_imia0(void);
-void int_adi(void);
+int ad_read(int ch);
+void int_imia0();
+void int_adi();
 void control_motor(void);
 void disp_lcd(void);
 
 int main(void){
 
   ROMEMU();
-  PBDDR = 0x0f;
-  P6DDR = 0x01;
+  PBDDR = 0x0F;
+  P6DDR = 0xFE;
   timer_init();
   ad_init();
   lcd_init();  
   timer_set(0,TIMER0);
-  timer_intflag_reset(0);
   timer_start(0);
   ENINT();  
-
-  while(1){
-    if(P9DR & 0x01 == 0) break;
-  }
   
+  while(1){
+    if(P6DR & 0x01 == 0) break;
+  }
   while(1){
     disp_lcd();
   }
@@ -75,15 +73,15 @@ int main(void){
 #pragma interrupt
 void int_imia0(void)
 {
-  control_time++;
-  if(control_time == CONTROLTIME){
-    control_motor();
-    control_time = 0;
-  }
   ad_time++;
   if(ad_time == ADTIME){
     ad_scan(0,1);
     ad_time = 0;
+  }
+  control_time++;
+  if(control_time == CONTROLTIME){
+    control_motor();
+    control_time = 0;
   }
   timer_intflag_reset(0);
   ENINT();
@@ -94,35 +92,39 @@ void int_adi(void){
   ad_stop();
   if(adbufdp < ADBUFSIZE-1) adbufdp++;
   else adbufdp = 0;
-  adbuf[0][adbufdp] = ADDRAH;
-  adbuf[1][adbufdp] = ADDRBH;
-  adbuf[2][adbufdp] = ADDRCH;
-  adbuf[3][adbufdp] = ADDRDH;
+  adbuf[0][adbufdp] = ADDRBH;
+  adbuf[1][adbufdp] = ADDRCH;
   ENINT();
 }
 
 void control_motor(void)
 {
-  an1 = ad_read(1);
-  an2 = ad_read(2);
-  
+  an1 = ad_read(0);
+  an2 = ad_read(1);
+
   PBDR = AN1STOP | AN2STOP;
   PBDR = AN1NR | AN2NR;
-
-  if(AN1 >= LEFTPWM){
-    PBDR = AN1STOP | AN2STOP;
-    PBDR = AN2BLAKE | AN1NR;
+  
+  if(an1 >= LEFTPWM){
+    PBDR &= (AN2STOP | AN1NR);
   }
-  if(AN2 >= RIGHTPWM){
-    PBDR = AN1STOP | AN2STOP;
-    PBDR = AN1BLAKE | AN2NR;
+  else{
+    PBDR |= AN1NR;
+  }
+  if(an2 >= RIGHTPWM){
+    PBDR &= (AN1STOP | AN2NR);
+  }
+  else{
+    PBDR |= AN2NR;
   }
 }
 
-void ad_read(int ch)
+int ad_read(int ch)
 {
+  
   int i,ad,bp;
-
+  int counter;
+  /*
   if ((ch > ADCHNUM) || (ch < 0)) ad = ADCHNONE;
   else {
     bp = adbufdp;
@@ -139,6 +141,14 @@ void ad_read(int ch)
     ad /= ADAVRNUM;
   }
   return ad; /* データの平均値を返す */
+  
+  for(counter=0;counter<ADAVRNUM;counter++){
+    ad = adbuf[ch][(adbufdp+counter)%10];
+    ad = adbuf[ch][(adbufdp+counter)%10];
+  }
+  ad = ad/ADAVRNUM;
+  ad %= 1000; 
+  return ad;
 }
 
 void disp_lcd(void)

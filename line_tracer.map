@@ -1,24 +1,27 @@
 Archive member included because of file (symbol)
 
-/home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/h8300h/int32/libgcc.a(_divsi3.o)
-                              main.o (___modsi3)
 /home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/h8300h/int32/libgcc.a(_mulsi3.o)
-                              main.o (___mulsi3)
+                              timer.o (___mulsi3)
+/home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/h8300h/int32/libgcc.a(_divsi3.o)
+                              timer.o (___udivsi3)
 /home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/../../../../h8300-hms/lib/h8300h/int32/libg.a(lib_a-strlen.o)
                               lcd.o (_strlen)
 
 Allocating common symbols
 Common symbol       size              file
 
-an1                 0x1               main.o
-adbufdp             0x4               main.o
-an2                 0x1               main.o
-adbuf               0x20              main.o
-pwm_time            0x4               main.o
-disp_time           0x4               main.o
-ad_time             0x4               main.o
-control_time        0x4               main.o
-key_time            0x4               main.o
+disp_flag           0x4               linetracer.o
+adbufdp             0x4               linetracer.o
+rightval            0x1               linetracer.o
+lcd_str_lower       0x9               linetracer.o
+adbuf               0x20              linetracer.o
+ad_val_hold         0x4               linetracer.o
+lcd_str_upper       0x9               linetracer.o
+leftval             0x1               linetracer.o
+disp_time           0x4               linetracer.o
+ad_time             0x4               linetracer.o
+control_time        0x4               linetracer.o
+key_time            0x4               linetracer.o
 
 Memory Configuration
 
@@ -29,7 +32,7 @@ ram              0x00400000         0x001f0000
 Linker script and memory map
 
 LOAD ./ramcrt-ext.o
-LOAD main.o
+LOAD linetracer.o
 LOAD ad.o
 LOAD lcd.o
 LOAD sci2.o
@@ -65,8 +68,8 @@ LOAD /home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/h8300h/int32/libgcc.a
                 0x00ffe050        0x4 LONG 0x400000 DEFINED (_int_wovi)?<code 340> (_int_wovi):<code 340> (_start)
                 0x00ffe054        0x4 LONG 0x400000 <code 340> (_start)
                 0x00ffe058        0x4 LONG 0x400000 <code 340> (_start)
-                0x00ffe05c        0x4 LONG 0x4000e6 DEFINED (_int_adi)?<code 340> (_int_adi):<code 340> (_start)
-                0x00ffe060        0x4 LONG 0x40004e DEFINED (_int_imia0)?<code 340> (_int_imia0):<code 340> (_start)
+                0x00ffe05c        0x4 LONG 0x400150 DEFINED (_int_adi)?<code 340> (_int_adi):<code 340> (_start)
+                0x00ffe060        0x4 LONG 0x400080 DEFINED (_int_imia0)?<code 340> (_int_imia0):<code 340> (_start)
                 0x00ffe064        0x4 LONG 0x400000 DEFINED (_int_imib0)?<code 340> (_int_imib0):<code 340> (_start)
                 0x00ffe068        0x4 LONG 0x400000 DEFINED (_int_ovi0)?<code 340> (_int_ovi0):<code 340> (_start)
                 0x00ffe06c        0x4 LONG 0x400000 <code 340> (_start)
@@ -107,89 +110,94 @@ LOAD /home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/h8300h/int32/libgcc.a
                 0x00ffe0f8        0x4 LONG 0x400000 <code 340> (_start)
                 0x00ffe0fc        0x4 LONG 0x400000 <code 340> (_start)
 
-.text           0x00400000      0xb06
+.text           0x00400000      0xbd2
                 0x00400000                __text_start = .
  *(.text)
  .text          0x00400000        0xc ./ramcrt-ext.o
                                   0xe (size before relaxing)
                 0x00400000                _start
- .text          0x0040000c      0x348 main.o
-                                0x34c (size before relaxing)
-                0x004000e6                _int_adi
-                0x004001de                _ad_read
-                0x00400186                _control_motor
-                0x0040004e                _int_imia0
-                0x00400258                _disp_lcd
+ .text          0x0040000c      0x414 linetracer.o
+                                0x416 (size before relaxing)
+                0x00400150                _int_adi
+                0x004002b6                _set_str
+                0x004001f0                _ad_read
+                0x004003aa                _init_disp_str
+                0x004003ea                _disp
+                0x00400080                _int_imia0
+                0x0040025c                _control_proc
                 0x0040000c                _main
- .text          0x00400354       0x82 ad.o
-                0x00400354                _ad_init
-                0x00400396                _ad_scan
-                0x004003be                _ad_stop
-                0x00400370                _ad_start
- .text          0x004003d6      0x1a8 lcd.o
+ .text          0x00400420       0x82 ad.o
+                0x00400420                _ad_init
+                0x00400462                _ad_scan
+                0x0040048a                _ad_stop
+                0x0040043c                _ad_start
+ .text          0x004004a2      0x1a8 lcd.o
                                 0x1b0 (size before relaxing)
-                0x004003d6                _lcd_init
-                0x00400556                _wait1ms
-                0x004004cc                _lcd_printstr
-                0x00400510                _lcd_printch
-                0x00400462                _lcd_cursor
-                0x004004b2                _lcd_clear
-                0x00400520                _lcd_putch
- .text          0x0040057e      0x1a6 sci2.o
+                0x004004a2                _lcd_init
+                0x00400622                _wait1ms
+                0x00400598                _lcd_printstr
+                0x004005dc                _lcd_printch
+                0x0040052e                _lcd_cursor
+                0x0040057e                _lcd_clear
+                0x004005ec                _lcd_putch
+ .text          0x0040064a      0x1a6 sci2.o
                                 0x1b0 (size before relaxing)
-                0x0040070a                _putch
-                0x004005aa                _numtohex
-                0x004006a4                _putstr
-                0x004005de                _gethex
-                0x00400630                _getch
-                0x0040057e                _init_sci2
-                0x004005c4                _hextonum
- .text          0x00400724      0x2ca timer.o
-                0x00400724                _timer_set
-                0x00400996                _timer_init
-                0x00400940                _timer_start
-                0x0040096a                _timer_stop
-                0x004009c6                _timer_intflag_reset
- .text          0x004009ee       0xc4 /home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/h8300h/int32/libgcc.a(_divsi3.o)
+                0x004007d6                _putch
+                0x00400676                _numtohex
+                0x00400770                _putstr
+                0x004006aa                _gethex
+                0x004006fc                _getch
+                0x0040064a                _init_sci2
+                0x00400690                _hextonum
+ .text          0x004007f0      0x2ca timer.o
+                0x004007f0                _timer_set
+                0x00400a62                _timer_init
+                0x00400a0c                _timer_start
+                0x00400a36                _timer_stop
+                0x00400a92                _timer_intflag_reset
+ .text          0x00400aba       0x18 /home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/h8300h/int32/libgcc.a(_mulsi3.o)
+                0x00400aba                ___mulsi3
+ .text          0x00400ad2       0xc4 /home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/h8300h/int32/libgcc.a(_divsi3.o)
                                  0xc8 (size before relaxing)
-                0x00400a3a                ___umodsi3
-                0x00400a4e                ___divsi3
-                0x00400a14                ___modsi3
-                0x00400a28                ___udivsi3
- .text          0x00400ab2       0x18 /home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/h8300h/int32/libgcc.a(_mulsi3.o)
-                0x00400ab2                ___mulsi3
- .text          0x00400aca       0x3c /home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/../../../../h8300-hms/lib/h8300h/int32/libg.a(lib_a-strlen.o)
-                0x00400aca                _strlen
+                0x00400b1e                ___umodsi3
+                0x00400b32                ___divsi3
+                0x00400af8                ___modsi3
+                0x00400b0c                ___udivsi3
+ .text          0x00400b96       0x3c /home/local/bin/../lib/gcc-lib/h8300-hms/3.3.6/../../../../h8300-hms/lib/h8300h/int32/libg.a(lib_a-strlen.o)
+                0x00400b96                _strlen
  *(.rodata)
  *(.strings)
-                0x00400b06                __text_end = .
+                0x00400bd2                __text_end = .
 
-.tors           0x00400b06        0x0
-                0x00400b06                ___ctors = .
+.tors           0x00400bd2        0x0
+                0x00400bd2                ___ctors = .
  *(.ctors)
-                0x00400b06                ___ctors_end = .
-                0x00400b06                ___dtors = .
+                0x00400bd2                ___ctors_end = .
+                0x00400bd2                ___dtors = .
  *(.dtors)
-                0x00400b06                ___dtors_end = .
+                0x00400bd2                ___dtors_end = .
 
-.data           0x00400b06        0x0
-                0x00400b06                __data_start = .
+.data           0x00400bd2        0x0
+                0x00400bd2                __data_start = .
  *(.data)
-                0x00400b06                __edata = .
+                0x00400bd2                __edata = .
 
-.bss            0x00400b10       0x44
-                0x00400b10                __bss_start = .
+.bss            0x00400be0       0x64
+                0x00400be0                __bss_start = .
  *(.bss)
  *(COMMON)
- COMMON         0x00400b10       0x44 main.o
-                0x00400b10                _an1
-                0x00400b14                _adbufdp
-                0x00400b18                _an2
-                0x00400b20                _adbuf
-                0x00400b40                _pwm_time
-                0x00400b44                _disp_time
-                0x00400b48                _ad_time
-                0x00400b4c                _control_time
-                0x00400b50                _key_time
-                0x00400b54                __bss_end = .
+ COMMON         0x00400be0       0x64 linetracer.o
+                0x00400be0                _disp_flag
+                0x00400be4                _adbufdp
+                0x00400be8                _rightval
+                0x00400bf0                _lcd_str_lower
+                0x00400c00                _adbuf
+                0x00400c20                _ad_val_hold
+                0x00400c28                _lcd_str_upper
+                0x00400c31                _leftval
+                0x00400c34                _disp_time
+                0x00400c38                _ad_time
+                0x00400c3c                _control_time
+                0x00400c40                _key_time
+                0x00400c44                __bss_end = .
 OUTPUT(line_tracer.coff coff-h8300)

@@ -102,9 +102,7 @@ int main(void)
   init_disp_str();
 
   /*
-  // ボタンが押されるまでの処理
   while(1){
-    // ボタンが押されたらループを抜ける
     if(P6DR & 0x01 == 0){
       break;
     }
@@ -213,18 +211,6 @@ void control_proc(void)
   // AN1,AN2からの読み込み
   rightval = ad_read(1);
   leftval = ad_read(2);
-  /*
-  if(leftval > LEFTPWM && rightval > RIGHTPWM){
-    PBDR = LMSTOP | RMSTOP;
-    PBDR = LMCW | RMCW;
-  }else if(leftval > LEFTPWM){
-    PBDR = LMSTOP | RMSTOP;
-    PBDR = LMCW | RMCCW;
-  }else if(rightval > RIGHTPWM){
-    PBDR = LMSTOP | RMSTOP;
-    PBDR = LMCCW | RMCW;
-  }
-  */
  
   if(leftval > LEFTPWM && rightval < RIGHTPWM){
     PBDR = 0x05;
@@ -244,6 +230,7 @@ void control_proc(void)
       }
     }
   }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
+    PBDR = 0x00;
     mode = 0x02;
   }  
   PBDR = mode; 

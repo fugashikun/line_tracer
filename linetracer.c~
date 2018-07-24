@@ -62,12 +62,23 @@ volatile int ad_val_hold;
 volatile char lcd_str_upper[LCDDISPSIZE+1];
 volatile char lcd_str_lower[LCDDISPSIZE+1];
 
+<<<<<<< HEAD
 int main();
 void int_imia0();
 void disp();
 int  ad_read(int ch);
 void control_proc(void);
 void set_str(void);
+=======
+int main(void);
+void int_imia0(void);
+void int_adi(void);
+int  ad_read(int ch);
+void control_proc(void);
+void set_str(void);
+void init_disp_str(void);
+void disp(void);
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
 
 int main(void){
   int i;
@@ -143,18 +154,30 @@ void int_imia0(void){
 
 #pragma interrupt
 void int_adi(void)
+<<<<<<< HEAD
      /* A/D変換終了の割り込みハンドラ                               */
      /* 関数の名前はリンカスクリプトで固定している                   */
      /* 関数の直前に割り込みハンドラ指定の #pragma interrupt が必要  */
+=======
+/* A/D変換終了の割り込みハンドラ                               */
+/* 関数の名前はリンカスクリプトで固定している                   */
+/* 関数の直前に割り込みハンドラ指定の #pragma interrupt が必要  */
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
 {
   ad_stop();    /* A/D変換の停止と変換終了フラグのクリア */
 
   /* ここでバッファポインタの更新を行う */
   /* 　但し、バッファの境界に注意して更新すること */
   if(adbufdp < ADBUFSIZE-1){
+<<<<<<< HEAD
   	adbufdp++;
   }else{
   	adbufdp = 0;
+=======
+    adbufdp++;
+  }else{
+    adbufdp = 0;
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
   }
   /* ここでバッファにA/Dの各チャネルの変換データを入れる */
   /* スキャングループ 0 を指定した場合は */
@@ -170,9 +193,15 @@ void int_adi(void)
 }
 
 int ad_read(int ch)
+<<<<<<< HEAD
      /* A/Dチャネル番号を引数で与えると, 指定チャネルの平均化した値を返す関数 */
      /* チャネル番号は，0〜ADCHNUM の範囲 　　　　　　　　　　　             */
      /* 戻り値は, 指定チャネルの平均化した値 (チャネル指定エラー時はADCHNONE) */
+=======
+/* A/Dチャネル番号を引数で与えると, 指定チャネルの平均化した値を返す関数 */
+/* チャネル番号は，0〜ADCHNUM の範囲 　　　　　　　　　　　             */
+/* 戻り値は, 指定チャネルの平均化した値 (チャネル指定エラー時はADCHNONE) */
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
 {
   int i,ad,bp;
 
@@ -199,8 +228,13 @@ int ad_read(int ch)
 }
 
 void control_proc(void)
+<<<<<<< HEAD
      /* 制御を行う関数                                           */
      /* この関数はタイマ割り込み0の割り込みハンドラから呼び出される */
+=======
+/* 制御を行う関数                                           */
+/* この関数はタイマ割り込み0の割り込みハンドラから呼び出される */
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
 {
   // AN1,AN2からの読み込み
   rightval = ad_read(1);
@@ -218,7 +252,12 @@ void control_proc(void)
   }
 }
 
+<<<<<<< HEAD
 void set_str(void){
+=======
+void set_str(void)
+{
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
   int i;
 
   if(rightval / 100 != 0){
@@ -242,7 +281,12 @@ void set_str(void){
   lcd_str_lower[++i] = ' ';
 }
 
+<<<<<<< HEAD
 void init_disp_str(){
+=======
+void init_disp_str(void)
+{
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
   int i;
   for(i = 0;i < LCDDISPSIZE;i++){
     lcd_str_upper[i] = ' ';

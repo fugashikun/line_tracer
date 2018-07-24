@@ -11,14 +11,18 @@
 // タイマー割り込み間隔
 #define TIMER0 1000
 
-#define LSWITCHVAL 190
-#define RSWITCHVAL 190
+#define LEFTPWM 190
+#define RIGHTPWM 190
 
 /* 割り込み処理で各処理を行う頻度を決める定数 */
 #define DISPTIME 100
 #define KEYTIME 1
 #define ADTIME  2
 #define CONTROLTIME 10
+
+#define THROUGH 0
+#define RTURN 1
+#define LTURN 2
 
 // 左のモーターの動きを表す定数
 #define LMSTOP 0x00 //ストップ
@@ -51,6 +55,8 @@ volatile int disp_time, key_time, ad_time,  control_time;
 // 割り込み用
 volatile int disp_time,disp_flag;
 
+volatile int mode,turn_flag;
+
 unsigned char rightval, leftval;
 
 // AD変換用
@@ -62,16 +68,16 @@ volatile int ad_val_hold;
 volatile char lcd_str_upper[LCDDISPSIZE+1];
 volatile char lcd_str_lower[LCDDISPSIZE+1];
 
-int main();
 void int_imia0();
-void disp();
 int  ad_read(int ch);
 void control_proc(void);
+void int_adi(void);
 void set_str(void);
+void init_disp_str(void);
+void disp(void);
 
-int main(void){
-  int i;
-
+int main(void)
+{
   // 初期化
   ROMEMU();
   // ポートの初期化
@@ -95,6 +101,7 @@ int main(void){
 
   init_disp_str();
 
+  /*
   // ボタンが押されるまでの処理
   while(1){
     // ボタンが押されたらループを抜ける
@@ -102,6 +109,7 @@ int main(void){
       break;
     }
   }
+  */
 
   // メインループ
   // 基本的な処理は割り込みハンドラ内に記述する
@@ -205,26 +213,43 @@ void control_proc(void)
   // AN1,AN2からの読み込み
   rightval = ad_read(1);
   leftval = ad_read(2);
-
-  // モーターの制御
-  PBDR = LMSTOP | RMSTOP;
-  PBDR = LMCW | RMCW;
-
-  if(rightval >= RSWITCHVAL){
-    PBDR &= (RMSTOP | LMCW);
+  /*
+  if(leftval > LEFTPWM && rightval > RIGHTPWM){
+    PBDR = LMSTOP | RMSTOP;
+    PBDR = LMCW | RMCW;
+  }else if(leftval > LEFTPWM){
+    PBDR = LMSTOP | RMSTOP;
+    PBDR = LMCW | RMCCW;
+  }else if(rightval > RIGHTPWM){
+    PBDR = LMSTOP | RMSTOP;
+    PBDR = LMCCW | RMCW;
   }
-  else{
-    PBDR |= RMCW;
-  }
-  if(leftval >= LSWITCHVAL){
-    PBDR &= (LMSTOP | RMCW);
-  }
-  else{
-    PBDR |= LMCW;
-  }
-}
-
-void set_str(void){
+  */
+ 
+  if(leftval > LEFTPWM && rightval < RIGHTPWM){
+    PBDR = 0x05;
+    turn_flag = 1;
+  }else if(leftval > LEFTPWM){
+    mode = 0x0D;
+    turn_flag = 0;
+  }else if(rightval > RIGHTPWM){
+    mode = 0x07;
+    turn_flag = 0;
+  }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
+    if(turn_flag == 1){
+      if(mode == 0x0D){
+        mode = 0x08;
+      }else if(mode == 0x07){
+        mode = 0x02;
+      }
+    }
+  }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
+    mode = 0x02;
+  }  
+  PBDR = mode; 
+}  
+void set_str(void)
+{
   int i;
 
   if(rightval / 100 != 0){
@@ -248,7 +273,8 @@ void set_str(void){
   lcd_str_lower[++i] = ' ';
 }
 
-void init_disp_str(){
+void init_disp_str(void)
+{
   int i;
   for(i = 0;i < LCDDISPSIZE;i++){
     lcd_str_upper[i] = ' ';

@@ -22,8 +22,13 @@
 /* チャネル指定エラー時に返す値 */
 #define ADCHNONE -1
 
+<<<<<<< HEAD
 #define RIGHTPWM 190
 #define LEFTPWM 190
+=======
+#define RIGHTPWM 255
+#define LEFTPWM 255
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
 
 #define AN1STOP 0x00
 #define AN1NR 0x01
@@ -44,27 +49,49 @@ volatile int adbufdp;
 
 unsigned char an1,an2;
 
+<<<<<<< HEAD
 int ad_read(int ch);
 void int_imia0();
 void int_adi();
+=======
+void ad_read(int ch);
+void int_imia0(void);
+void int_adi(void);
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
 void control_motor(void);
 void disp_lcd(void);
 
 int main(void){
 
   ROMEMU();
+<<<<<<< HEAD
   PBDDR = 0x0F;
   P6DDR = 0xFE;
+=======
+  PBDDR = 0x0f;
+  P6DDR = 0x01;
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
   timer_init();
   ad_init();
   lcd_init();  
   timer_set(0,TIMER0);
+<<<<<<< HEAD
   timer_start(0);
   ENINT();  
   
   while(1){
     if(P6DR & 0x01 == 0) break;
   }
+=======
+  timer_intflag_reset(0);
+  timer_start(0);
+  ENINT();  
+
+  while(1){
+    if(P9DR & 0x01 == 0) break;
+  }
+  
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
   while(1){
     disp_lcd();
   }
@@ -73,16 +100,27 @@ int main(void){
 #pragma interrupt
 void int_imia0(void)
 {
+<<<<<<< HEAD
   ad_time++;
   if(ad_time == ADTIME){
     ad_scan(0,1);
     ad_time = 0;
   }
+=======
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
   control_time++;
   if(control_time == CONTROLTIME){
     control_motor();
     control_time = 0;
   }
+<<<<<<< HEAD
+=======
+  ad_time++;
+  if(ad_time == ADTIME){
+    ad_scan(0,1);
+    ad_time = 0;
+  }
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
   timer_intflag_reset(0);
   ENINT();
 }
@@ -92,13 +130,21 @@ void int_adi(void){
   ad_stop();
   if(adbufdp < ADBUFSIZE-1) adbufdp++;
   else adbufdp = 0;
+<<<<<<< HEAD
   adbuf[0][adbufdp] = ADDRBH;
   adbuf[1][adbufdp] = ADDRCH;
+=======
+  adbuf[0][adbufdp] = ADDRAH;
+  adbuf[1][adbufdp] = ADDRBH;
+  adbuf[2][adbufdp] = ADDRCH;
+  adbuf[3][adbufdp] = ADDRDH;
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
   ENINT();
 }
 
 void control_motor(void)
 {
+<<<<<<< HEAD
   an1 = ad_read(0);
   an2 = ad_read(1);
 
@@ -125,6 +171,28 @@ int ad_read(int ch)
   int i,ad,bp;
   int counter;
   /*
+=======
+  an1 = ad_read(1);
+  an2 = ad_read(2);
+  
+  PBDR = AN1STOP | AN2STOP;
+  PBDR = AN1NR | AN2NR;
+
+  if(AN1 >= LEFTPWM){
+    PBDR = AN1STOP | AN2STOP;
+    PBDR = AN2BLAKE | AN1NR;
+  }
+  if(AN2 >= RIGHTPWM){
+    PBDR = AN1STOP | AN2STOP;
+    PBDR = AN1BLAKE | AN2NR;
+  }
+}
+
+void ad_read(int ch)
+{
+  int i,ad,bp;
+
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
   if ((ch > ADCHNUM) || (ch < 0)) ad = ADCHNONE;
   else {
     bp = adbufdp;
@@ -141,6 +209,7 @@ int ad_read(int ch)
     ad /= ADAVRNUM;
   }
   return ad; /* データの平均値を返す */
+<<<<<<< HEAD
   
   for(counter=0;counter<ADAVRNUM;counter++){
     ad = adbuf[ch][(adbufdp+counter)%10];
@@ -151,6 +220,13 @@ int ad_read(int ch)
   return ad;
 }
 
+=======
+}
+void init_disp(void)
+{
+  for()
+}
+>>>>>>> 6d2603590e126a831799765344bff2ca36c79aff
 void disp_lcd(void)
 {
   lcd_cursor(0,0);

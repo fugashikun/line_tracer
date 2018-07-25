@@ -4,21 +4,21 @@
 #include "lcd.h"
 #include "ad.h"
 #include "timer.h"
-//#include "loader.h"
-//#include "sci2.h"
-//#include "random.h"
+#include "loader.h"
+#include "sci2.h"
+#include "random.h"
 
 // タイマー割り込み間隔
 #define TIMER0 1000
 
-#define LEFTPWM 190
-#define RIGHTPWM 190
+#define LEFTPWM 200
+#define RIGHTPWM 200
 
 /* 割り込み処理で各処理を行う頻度を決める定数 */
 #define DISPTIME 100
 #define KEYTIME 1
 #define ADTIME  2
-#define CONTROLTIME 10
+#define CONTROLTIME 30
 
 #define THROUGH 0
 #define RTURN 1
@@ -68,10 +68,10 @@ volatile int ad_val_hold;
 volatile char lcd_str_upper[LCDDISPSIZE+1];
 volatile char lcd_str_lower[LCDDISPSIZE+1];
 
-void int_imia0();
+void int_imia0(void);
+void int_adi(void);
 int  ad_read(int ch);
 void control_proc(void);
-void int_adi(void);
 void set_str(void);
 void init_disp_str(void);
 void disp(void);
@@ -82,7 +82,7 @@ int main(void)
   ROMEMU();
   // ポートの初期化
   PBDDR = 0x0f;
-  P6DDR = 0x01;
+  P6DDR &= ~0x01;
   // 表示関係の初期化
   disp_time = 0;
   disp_flag = 1;
@@ -96,21 +96,21 @@ int main(void)
   ad_init();
   timer_init();
   timer_set(0,TIMER0);
-  timer_start(0);
+  
   ENINT();
 
   init_disp_str();
 
-  /*
+  
   while(1){
-    if(P6DR & 0x01 == 0){
+    if((P6DR & 0x01) == 0x00){
       break;
     }
   }
-  */
+  
 
-  // メインループ
-  // 基本的な処理は割り込みハンドラ内に記述する
+  timer_start(0);
+
   while(1){
     if(disp_flag == 1){
       disp();
@@ -212,7 +212,14 @@ void control_proc(void)
   rightval = ad_read(1);
   leftval = ad_read(2);
  
-  if(leftval > LEFTPWM && rightval < RIGHTPWM){
+  if(leftval < LEFTPWM && rightval < RIGHTPWM){
+    PBDR = 0x00;
+    if(mode == 0x0D){
+      while(leftval > LEFTPWM && rightval < RIGHTPWM){
+	mode = 0x02;
+      }  
+    }
+  }else if(leftval > LEFTPWM && rightval < RIGHTPWM){
     PBDR = 0x05;
     turn_flag = 1;
   }else if(leftval > LEFTPWM){
@@ -223,16 +230,14 @@ void control_proc(void)
     turn_flag = 0;
   }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
     if(turn_flag == 1){
+      PBDR = 0x00;
       if(mode == 0x0D){
         mode = 0x08;
       }else if(mode == 0x07){
         mode = 0x02;
       }
     }
-  }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
-    PBDR = 0x00;
-    mode = 0x02;
-  }  
+  }
   PBDR = mode; 
 }  
 void set_str(void)

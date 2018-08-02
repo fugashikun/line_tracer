@@ -11,14 +11,14 @@
 // タイマー割り込み間隔
 #define TIMER0 1000
 
-#define LEFTPWM 200
-#define RIGHTPWM 200
+#define LEFTPWM 190
+#define RIGHTPWM 190
 
 /* 割り込み処理で各処理を行う頻度を決める定数 */
 #define DISPTIME 100
 #define KEYTIME 1
 #define ADTIME  2
-#define CONTROLTIME 30
+#define CONTROLTIME 10
 
 #define THROUGH 0
 #define RTURN 1
@@ -211,35 +211,21 @@ void control_proc(void)
   // AN1,AN2からの読み込み
   rightval = ad_read(1);
   leftval = ad_read(2);
- 
-  if(leftval < LEFTPWM && rightval < RIGHTPWM){
-    PBDR = 0x00;
-    if(mode == 0x0D){
-      while(leftval > LEFTPWM && rightval < RIGHTPWM){
-	mode = 0x02;
-      }  
-    }
-  }else if(leftval > LEFTPWM && rightval < RIGHTPWM){
+
+  if(leftval > LEFTPWM && rightval < RIGHTPWM){
     PBDR = 0x05;
-    turn_flag = 1;
-  }else if(leftval > LEFTPWM){
-    mode = 0x0D;
-    turn_flag = 0;
-  }else if(rightval > RIGHTPWM){
-    mode = 0x07;
-    turn_flag = 0;
   }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
-    if(turn_flag == 1){
+    if(mode == 0x07){
+      mode = 0x0D;
+    }else if(0x0D){
       PBDR = 0x00;
-      if(mode == 0x0D){
-        mode = 0x08;
-      }else if(mode == 0x07){
-        mode = 0x02;
-      }
+      mode = 0x09;
     }
+  }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
+    mode = 0x07;
   }
   PBDR = mode; 
-}  
+}
 void set_str(void)
 {
   int i;

@@ -50,7 +50,7 @@
 #define ADCHNONE -1
 
 /* 割り込み処理に必要な変数は大域変数にとる */
-volatile int disp_time, key_time, ad_time,  control_time;
+volatile int disp_time, key_time, ad_time,control_time;
 
 // 割り込み用
 volatile int disp_time,disp_flag;
@@ -96,6 +96,7 @@ int main(void)
   ad_init();
   timer_init();
   timer_set(0,TIMER0);
+  turn_flag = 0;
   
   ENINT();
 
@@ -136,13 +137,12 @@ void int_imia0(void){
     ad_time = 0;
   }
 
-  // 制御処理
   control_time++;
   if(control_time >= CONTROLTIME){
     control_proc();
     control_time = 0;
   }
-
+  
   timer_intflag_reset(0);
   ENINT();
 }
@@ -212,40 +212,37 @@ void control_proc(void)
   rightval = ad_read(1);
   leftval = ad_read(2);
 
-  if(leftval > LEFTPWM && rightval < RIGHTPWM){
-    PBDR = 0x05;
-    turn_flag = 1;
-  }else if(leftval/40 > rightval/40){
-    mode = 0x0D;
-    turn_flag = 0;
-  }else if(leftval/40 < rightval/40){
-    mode = 0x07;
-    turn_flag = 0;
-  }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
-    if(turn_flag == 1){
+  if(turn_flag==0){
+    if(leftval > LEFTPWM && rightval < RIGHTPWM){
+      mode = 0x05;
+    }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
       if(mode == 0x0D){
-        mode = 0x09;
-      }else if(mode == 0x07){
-        mode = 0x06;
+	mode = 0x09;
+      }else{
+	mode = 0x0D;
       }
+    }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
+      mode = 0x07;
+    }else if(leftval > LEFTPWM && rightval < RIGHTPWM){
+      turn_flag=1;
     }
-    PBDR = mode; 
   }
-  /*
-  if(leftval > LEFTPWM && rightval < RIGHTPWM){
-    mode = 0x05;
-  }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
-    if(mode == 0x05){
-      PBDR = 0x00;
-      mode = 0x09;
-    }else{
+  if(turn_flag==1){
+    if(leftval > LEFTPWM && rightval < RIGHTPWM){
+      mode = 0x05;
+    }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
+      if(mode == 0x07){
+	mode = 0x06;
+      }else{
+	mode = 0x07;
+      }
+    }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
       mode = 0x0D;
+    }else if(leftval > LEFTPWM && rightval < RIGHTPWM){
+      turn_flag=0;
     }
-  }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
-    mode = 0x07;
   }
   PBDR = mode;
-  */ 
 }
 void set_str(void)
 {

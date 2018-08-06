@@ -11,14 +11,14 @@
 // タイマー割り込み間隔
 #define TIMER0 1000
 
-#define LEFTPWM 200
-#define RIGHTPWM 200
+#define LEFTPWM 190
+#define RIGHTPWM 190
 
 /* 割り込み処理で各処理を行う頻度を決める定数 */
 #define DISPTIME 100
 #define KEYTIME 1
 #define ADTIME  2
-#define CONTROLTIME 10
+#define CONTROLTIME 40
 
 #define THROUGH 0
 #define RTURN 1
@@ -55,7 +55,7 @@ volatile int disp_time, key_time, ad_time,control_time;
 // 割り込み用
 volatile int disp_time,disp_flag;
 
-volatile int mode,new_mode,old_mode,turn_flag;
+volatile int mode,new_mode,old_mode,old_old_mode,turn_flag;
 
 unsigned char rightval, leftval;
 
@@ -98,6 +98,7 @@ int main(void)
   timer_set(0,TIMER0);
   turn_flag = 0;
   old_mode = 0x05;
+  old_old_mode = 0x05;
   ENINT();
 
   init_disp_str();
@@ -254,18 +255,22 @@ void control_proc(void)
   }
   if(old_mode==0x05){
     if(new_mode==0x05) mode = 0x05;
-    if(new_mode==0x0D) mode = 0x0D;
-    if(new_mode==0x07) mode = 0x07;
+    else if(new_mode==0x0D) mode = 0x0D;
+    else if(new_mode==0x07) mode = 0x07;
   }else if(old_mode==0x0D){
     if(new_mode==0x05) mode = 0x05;
-    if(new_mode==0x0D) mode = 0x09;
-    if(new_mode==0x07) mode = 0x06;
+    else if(new_mode==0x0D) mode = 0x0D;
+    else if(new_mode==0x07) mode = 0x07;
   }else if(old_mode==0x07){
     if(new_mode==0x05) mode = 0x05;
-    if(new_mode==0x0D) mode = 0x09;
-    if(new_mode==0x07) mode = 0x06;
+    else if(new_mode==0x0D) mode = 0x0D;
+    else if(new_mode==0x07){
+      mode = 0x07;
+      if(old_old_mode == 0x07) mode = 0x02;
+    }
   }
   PBDR = mode;
+  old_old_mode = old_mode;
   old_mode = new_mode;
 }
 void set_str(void)

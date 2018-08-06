@@ -55,7 +55,7 @@ volatile int disp_time, key_time, ad_time,control_time;
 // 割り込み用
 volatile int disp_time,disp_flag;
 
-volatile int mode,turn_flag;
+volatile int mode,new_mode,old_mode,turn_flag;
 
 unsigned char rightval, leftval;
 
@@ -97,7 +97,7 @@ int main(void)
   timer_init();
   timer_set(0,TIMER0);
   turn_flag = 0;
-  
+  old_mode = 0x05;
   ENINT();
 
   init_disp_str();
@@ -211,7 +211,7 @@ void control_proc(void)
   // AN1,AN2からの読み込み
   rightval = ad_read(1);
   leftval = ad_read(2);
-
+  /*
   if(turn_flag==0){
     if(leftval > LEFTPWM && rightval < RIGHTPWM){
       mode = 0x05;
@@ -242,7 +242,31 @@ void control_proc(void)
       turn_flag=0;
     }
   }
+  */
+  if(leftval > LEFTPWM && rightval < RIGHTPWM){
+    new_mode = 0x05;
+  }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
+    new_mode = 0x07;
+  }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
+    new_mode = 0x0D;
+  }else if(leftval < LEFTPWM && rightval > RIGHTPWM){
+    new_mode = 0x07;
+  }
+  if(old_mode==0x05){
+    if(new_mode==0x05) mode = 0x05;
+    if(new_mode==0x0D) mode = 0x0D;
+    if(new_mode==0x07) mode = 0x07;
+  }else if(old_mode==0x0D){
+    if(new_mode==0x05) mode = 0x05;
+    if(new_mode==0x0D) mode = 0x09;
+    if(new_mode==0x07) mode = 0x06;
+  }else if(old_mode==0x07){
+    if(new_mode==0x05) mode = 0x05;
+    if(new_mode==0x0D) mode = 0x09;
+    if(new_mode==0x07) mode = 0x06;
+  }
   PBDR = mode;
+  old_mode = new_mode;
 }
 void set_str(void)
 {

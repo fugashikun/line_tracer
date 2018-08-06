@@ -167,3 +167,109 @@ void disp_lcd(void)
   lcd_cursor(2,1);
   lcd_printch(an2%10+'0');
 }
+/*
+  if(turn_flag==0){
+    if(leftval > LEFTPWM && rightval < RIGHTPWM){
+      mode = 0x05;
+    }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
+      if(mode == 0x0D){
+	mode = 0x09;
+      }else{
+	mode = 0x0D;
+      }
+    }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
+      mode = 0x07;
+    }else if(leftval > LEFTPWM && rightval < RIGHTPWM){
+      turn_flag=1;
+    }
+  }
+  if(turn_flag==1){
+    if(leftval > LEFTPWM && rightval < RIGHTPWM){
+      mode = 0x05;
+    }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
+      if(mode == 0x07){
+	mode = 0x06;
+      }else{
+	mode = 0x07;
+      }
+    }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
+      mode = 0x0D;
+    }else if(leftval > LEFTPWM && rightval < RIGHTPWM){
+      turn_flag=0;
+    }
+  }
+  */
+  /*
+  if(leftval > LEFTPWM && rightval < RIGHTPWM){
+    new_mode = 0x05;
+  }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
+    new_mode = 0x07;
+  }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
+    new_mode = 0x0D;
+  }else if(leftval < LEFTPWM && rightval > RIGHTPWM){
+    new_mode = 0x07;
+  }
+  if(old_mode==0x05){
+    if(new_mode==0x05) mode = 0x05;
+    else if(new_mode==0x0D) mode = 0x0D;
+    else if(new_mode==0x07) mode = 0x07;
+  }else if(old_mode==0x0D){
+    if(new_mode==0x05) mode = 0x05;
+    else if(new_mode==0x0D) mode = 0x0D;
+    else if(new_mode==0x07) mode = 0x07;
+  }else if(old_mode==0x07){
+    if(new_mode==0x05) mode = 0x05;
+    else if(new_mode==0x0D) mode = 0x0D;
+    else if(new_mode==0x07){
+      mode = 0x07;
+      if(old_old_mode == 0x07) mode = 0x02;
+    }
+  }
+  PBDR = mode;
+  old_old_mode = old_mode;
+  old_mode = new_mode;
+  */
+  /*
+  if(turn_flag%2==0){
+    if(leftval > LEFTPWM && rightval < RIGHTPWM){
+      new_mode = 0x05;
+    }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
+      if(old_mode==0x09 || old_mode==0x0D){
+	count++;
+      }else count = 0;
+      if(mode == 0x0D){
+	new_mode = 0x09;
+      }else{
+	new_mode = 0x0D;
+      }
+    }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
+      if(count > 20){
+	turn_flag++;
+	count=0;
+	new_mode = 0x00;
+      }else new_mode = 0x07;
+    }
+  }
+  if(turn_flag%2==1){
+    if(leftval < LEFTPWM && rightval > RIGHTPWM){
+      new_mode = 0x05;
+    }else if(leftval > LEFTPWM && rightval > RIGHTPWM){
+      if(old_mode==0x06 || old_mode==0x07){
+	count++;
+      }else count = 0;
+      if(mode == 0x07){
+	new_mode = 0x06;
+      }else{
+	new_mode = 0x07;
+      }
+    }else if(leftval < LEFTPWM && rightval < RIGHTPWM){
+      if(count > 20){
+	turn_flag++;
+	count=0;
+	new_mode = 0x00;
+      }else new_mode = 0x0D;
+    }
+  }
+  old_mode = new_mode;
+  PBDR = new_mode;
+  */

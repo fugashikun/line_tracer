@@ -11,14 +11,14 @@
 // タイマー割り込み間隔
 #define TIMER0 1000
 
-#define LEFTPWM 190
-#define RIGHTPWM 190
+#define LEFTPWM 200
+#define RIGHTPWM 200
 
 /* 割り込み処理で各処理を行う頻度を決める定数 */
 #define DISPTIME 100
 #define KEYTIME 1
 #define ADTIME  2
-#define CONTROLTIME 40
+#define CONTROLTIME 10
 
 #define THROUGH 0
 #define RTURN 1
@@ -215,7 +215,7 @@ void control_proc(void)
   
   if(leftval < LEFTPWM && rightval < RIGHTPWM){
     new_mode = 0x05;
-    if(count > 20){
+    if(count > 15){
       turn_flag++;
       count=0;
       new_mode = 0x00;
@@ -234,7 +234,7 @@ void control_proc(void)
   }else if(leftval < LEFTPWM && rightval > RIGHTPWM){
     new_mode = 0x07;
   }
-  if(old_mode!=new_mode) new_mode = 0x00;
+  //if(old_mode!=new_mode) new_mode = 0x00;
   old_mode = new_mode;
   PBDR = new_mode;
 }
